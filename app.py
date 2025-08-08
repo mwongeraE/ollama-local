@@ -33,6 +33,9 @@ def chat():
         messages=[{"role": "user", "content": user_message}]
     )
     ai_response = response["message"]["content"]
+    
+    print(f"User: {user_message}")
+    print(f"AI: {ai_response}")
 
     # Save to history
     chat_history.append({"user": user_message, "ai": ai_response})
