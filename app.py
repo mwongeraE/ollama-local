@@ -29,7 +29,7 @@ def chat():
     
     # Local LLM (Ollama)
     response = ollama.chat(
-        model="deepseek-llm",  # Replace with your model
+        model="deepseek-r1:70b",  # Replace with your model
         messages=[{"role": "user", "content": user_message}]
     )
     ai_response = response["message"]["content"]
