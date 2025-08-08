@@ -19,6 +19,9 @@ def chat():
         model="deepseek-r1:70b",
         messages=[{"role": "user", "content": user_message}]
     )
+    
+    print(f"User: {user_message}")
+    print(f"Bot: {response['message']['content']}")
     return jsonify({"reply": response["message"]["content"]})
 
 if __name__ == "__main__":
