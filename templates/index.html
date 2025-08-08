@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #chatbox { border: 1px solid #ccc; height: 400px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; }
+        #userInput { width: 75%; padding: 10px; }
+        #sendButton { padding: 10px 15px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        .user-message { color: #333; font-weight: bold; }
+        .ai-message { color: #0066cc; }
+    </style>
+</head>
+<body>
+    <h1>DeepSeek Chat</h1>
+    <div id="chatbox"></div>
+    <input type="text" id="userInput" placeholder="Type your message..." />
+    <button id="sendButton">Send</button>
+
+    <script>
+        const chatbox = document.getElementById("chatbox");
+        const userInput = document.getElementById("userInput");
+        const sendButton = document.getElementById("sendButton");
+
+        // Load chat history from localStorage
+        let chatHistory = JSON.parse(localStorage.getItem("deepseekChatHistory")) || [];
+        chatHistory.forEach(msg => addMessage(msg.role, msg.content));
+
+        // Send message to backend (CORS-compatible)
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            addMessage("You", message);
+            chatHistory.push({ role: "You", content: message });
+            userInput.value = "";
+
+            try {
+                const response = await fetch("http://localhost:5000/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message }),
+                    mode: "cors"  // Explicitly enable CORS
+                });
+
+                if (!response.ok) throw new Error("API error");
+                const data = await response.json();
+
+                addMessage("AI", data.reply);
+                chatHistory.push({ role: "AI", content: data.reply });
+                localStorage.setItem("deepseekChatHistory", JSON.stringify(chatHistory));
+            } catch (error) {
+                console.error("Error:", error);
+                addMessage("System", "Failed to get AI response. Check console.");
+            }
+        }
+
+        // Add message to chatbox
+        function addMessage(role, content) {
+            const msgDiv = document.createElement("div");
+            msgDiv.innerHTML = `<span class="${role.toLowerCase()}-message">${role}:</span> ${content}`;
+            chatbox.appendChild(msgDiv);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        // Event listeners
+        sendButton.addEventListener("click", sendMessage);
+        userInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+    </script>
+</body>
+</html>
